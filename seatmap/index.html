@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover"/>
 <meta name="theme-color" content="#4f46e5"/>
 <title>Select Your Seat — Ethiopian Airlines</title>
 <style>
@@ -11,6 +11,7 @@
   --free-bg:#dcfce7;--free-bd:#86efac;--free-ink:#166534;
   --paid-bg:#dbeafe;--paid-bd:#93c5fd;--paid-ink:#1d4ed8;
   --occ-bg:#edf0f4;--occ-bd:#dfe4ea;--occ-ink:#aab3bf;
+  --oth-bg:#fef3c7;--oth-bd:#fcd34d;--oth-ink:#92400e;
   --sel-bg:#4f46e5;--sel-bd:#4338ca;
   --accent:#4f46e5;
 }
@@ -18,7 +19,8 @@
 html,body{margin:0;padding:0}
 body{
   font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-  background:var(--bg);color:var(--ink);padding-bottom:96px;
+  background:var(--bg);color:var(--ink);
+  padding-bottom:calc(96px + env(safe-area-inset-bottom, 0px));
   -webkit-font-smoothing:antialiased;
 }
 .wrap{max-width:1100px;margin:0 auto;padding:16px}
@@ -56,15 +58,51 @@ body{
 
 /* card */
 .card{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:0 1px 2px rgba(15,23,42,.04)}
-.flightbar{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
-.route{font-size:19px;font-weight:800;letter-spacing:-.3px}
-.route .arrow{color:var(--accent);font-weight:700}
-.fmeta{font-size:12.5px;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:6px}
-.pill{background:#f1f5f9;border-radius:999px;padding:3px 10px;font-weight:600;color:#475569}
+
+/* plane nose header */
+.nose{
+  background:linear-gradient(180deg, #eef2ff 0%, #ffffff 100%);
+  border-radius:140px 140px 0 0;
+  padding:44px 20px 18px;
+  text-align:center;
+  position:relative;
+  border-bottom:1px solid var(--line);
+}
+.nose-plane{
+  position:absolute;
+  top:16px;left:50%;
+  transform:translateX(-50%);
+  color:var(--accent);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.nose-route{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:12px;
+  font-size:24px;
+  font-weight:800;
+  letter-spacing:-.5px;
+}
+.nose-code{font-family:ui-monospace, "SF Mono", Menlo, monospace; letter-spacing:.5px}
+.nose-arrow{color:var(--accent);font-size:20px}
+.nose-meta{font-size:12.5px;color:var(--muted);margin-top:6px}
+
+.nose-paxbar{
+  padding:10px 18px;
+  font-size:12.5px;
+  color:var(--muted);
+  background:#f8fafc;
+  border-bottom:1px solid var(--line);
+  text-align:center;
+}
+.nose-paxbar b{color:var(--ink)}
 
 /* seat grid */
-.mapwrap{overflow-x:auto;padding:18px}
-.grid{display:inline-block;min-width:100%}
+.mapwrap{overflow-x:auto;padding:18px;text-align:center;-webkit-overflow-scrolling:touch}
+.grid{display:inline-block;text-align:left}
 .srow{display:flex;align-items:center;gap:4px;margin-bottom:4px}
 .rnum{width:32px;flex:0 0 32px;text-align:center;font-size:11px;font-weight:700;color:#94a3b8}
 .cell{
@@ -87,6 +125,13 @@ button.cell.seat:active{transform:translateY(0)}
 .seat.occupied::after{
   content:"";position:absolute;inset:0;border-radius:8px;
   background:repeating-linear-gradient(45deg,transparent 0 5px,rgba(148,163,184,.18) 5px 10px);
+}
+.seat.other-pax{
+  background:var(--oth-bg);border-color:var(--oth-bd);color:var(--oth-ink);
+  cursor:not-allowed;position:relative;
+}
+.seat.other-pax::after{
+  content:"👤";position:absolute;top:-2px;right:1px;font-size:9px;line-height:1;opacity:.75;
 }
 .seat.selected{background:var(--sel-bg);border-color:var(--sel-bd);color:#fff;box-shadow:0 6px 14px -6px rgba(79,70,229,.9)}
 .seat.selected .price{color:#c7d2fe}
@@ -116,11 +161,13 @@ button.cell.seat:active{transform:translateY(0)}
 .sw.paid{background:var(--paid-bg);border-color:var(--paid-bd)}
 .sw.sel{background:var(--sel-bg);border-color:var(--sel-bd)}
 .sw.occ{background:var(--occ-bg);border-color:var(--occ-bd)}
+.sw.other{background:var(--oth-bg);border-color:var(--oth-bd)}
 
 /* bottom confirm bar */
 .confirmbar{
   position:fixed;left:0;right:0;bottom:0;z-index:50;background:#fff;
-  border-top:1px solid var(--line);padding:12px 16px;
+  border-top:1px solid var(--line);
+  padding:12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
   display:flex;justify-content:space-between;align-items:center;gap:12px;
   box-shadow:0 -6px 20px -8px rgba(15,23,42,.15);
 }
@@ -129,7 +176,7 @@ button.cell.seat:active{transform:translateY(0)}
 .confirmbar .total{color:#1d4ed8;font-weight:800}
 .confirmbar button{
   background:var(--accent);color:#fff;border:0;border-radius:10px;padding:10px 22px;
-  font-weight:700;font-size:14px;cursor:pointer;font-family:inherit;
+  font-weight:700;font-size:14px;cursor:pointer;font-family:inherit;white-space:nowrap;
 }
 .confirmbar button:disabled{opacity:.6;cursor:wait}
 
@@ -137,6 +184,41 @@ button.cell.seat:active{transform:translateY(0)}
 .err,.load{
   padding:40px;text-align:center;color:var(--muted);background:#fff;
   border-radius:14px;border:1px solid var(--line);margin-top:20px;
+}
+
+/* mobile */
+@media (max-width:640px){
+  .wrap{padding:12px}
+  .cell{width:36px;height:36px;flex:0 0 36px;font-size:11px;border-radius:8px}
+  .cell.side{width:4px;flex:0 0 4px}
+  .cell.aislecell{width:14px;flex:0 0 14px}
+  .cell.colhead{height:22px;font-size:10.5px}
+  .rnum{width:26px;flex:0 0 26px;font-size:10px}
+  .seat .price{font-size:7.5px}
+  .seat.other-pax::after{font-size:8px;top:-3px}
+  .mapwrap{padding:12px}
+
+  .nose{padding:38px 14px 14px;border-radius:100px 100px 0 0}
+  .nose-route{font-size:20px;gap:8px}
+  .nose-arrow{font-size:17px}
+  .nose-meta{font-size:11.5px}
+
+  .tab{padding:6px 10px;font-size:12px}
+  .tab .sub{font-size:10px}
+  .pax{padding:5px 10px;font-size:12px}
+  .pax .seat{padding:2px 8px;font-size:10.5px;min-width:34px}
+
+  .tabs{flex-wrap:nowrap;overflow-x:auto;padding-bottom:6px;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
+  .tabs::-webkit-scrollbar{height:4px}
+  .tabs::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:2px}
+  .tab,.pax{flex:0 0 auto}
+
+  .sum-item{flex-wrap:wrap}
+  .sum-price{margin-left:0;width:100%;text-align:left}
+
+  .confirmbar{padding:10px 12px calc(10px + env(safe-area-inset-bottom, 0px));gap:8px}
+  .confirmbar .info{font-size:12px}
+  .confirmbar button{padding:9px 16px;font-size:13px}
 }
 </style>
 </head>
@@ -167,11 +249,6 @@ button.cell.seat:active{transform:translateY(0)}
 
 /* ============================================================
    CONFIG — point this at your n8n instance
-   ============================================================
-   Replace with the public URL of your n8n. No trailing slash.
-   The HTML calls:
-     {N8N_BASE}/webhook/seatmap-data?session=...
-     {N8N_BASE}/webhook/seat-selection
    ============================================================ */
 var CONFIG = {
   N8N_BASE: 'https://aiagent-dev.ethiopianairlines.com'
@@ -246,6 +323,21 @@ function selectedFor(gi,pi){
   var k=Object.keys(state.sel).find(function(key){ return key.indexOf(pre)===0; });
   return k?state.sel[k]:null;
 }
+
+/* ---------- CROSS-PASSENGER LOCK ----------
+   Returns true if seat `code` on segment `gi` was already selected by
+   a DIFFERENT passenger than `pi`. */
+function seatTakenByOther(gi, pi, code){
+  if(!code) return false;
+  var segPre = gi + '::';
+  var myPre  = gi + '::' + pi + '::';
+  return Object.keys(state.sel).some(function(k){
+    if(k.indexOf(segPre) !== 0) return false;
+    if(k.indexOf(myPre) === 0) return false; // my own selection
+    return state.sel[k].code === code;
+  });
+}
+
 function seatPrice(seat){
   if(!seat) return {amount:0,currency:''};
   var t=seat.total&&seat.total.alternatives&&seat.total.alternatives[0]&&seat.total.alternatives[0][0];
@@ -279,6 +371,7 @@ function renderLegend(){
       '<span class="lg"><i class="sw free"></i>Free</span>'+
       '<span class="lg"><i class="sw paid"></i>Paid</span>'+
       '<span class="lg"><i class="sw sel"></i>Selected</span>'+
+      '<span class="lg"><i class="sw other"></i>Other pax</span>'+
       '<span class="lg"><i class="sw occ"></i>Occupied</span>'+
     '</div>';
 }
@@ -362,23 +455,38 @@ function seatGridHTML(sm,gi,pi){
       if(c==='AISLE'){ html+='<div class="cell aislecell"></div>'; return; }
 
       var seat=seats[i];
-      var kind=seatKind(seat);
-      if(kind==='blank'||kind==='wall'||kind==='aislecell'){
-        html += '<div class="cell '+kind+'"></div>';
+      var sk=seatKind(seat);
+      if(sk==='blank'||sk==='wall'||sk==='aislecell'){
+        html += '<div class="cell '+sk+'"></div>';
         return;
       }
 
       var key=gi+'::'+pi+'::'+(seat.code||'');
-      var sel=!!state.sel[key];
+      var isSelected = !!state.sel[key];
+      var takenByOther = seatTakenByOther(gi, pi, seat.code);
       var price=seatPrice(seat);
       var isExit=(seat.slotCharacteristics||[]).indexOf('EXIT')!==-1;
+
+      var cls='cell seat '+sk;
+      var avail;
+      if(takenByOther){
+        cls='cell seat other-pax';
+        avail='0';
+      } else if(isSelected){
+        cls+=' selected';
+        avail='1';
+      } else {
+        avail = seat.available ? '1' : '0';
+      }
+      if(isExit) cls+=' exitseat';
+
       var inner='<span>'+esc(c)+'</span>';
       if(price.amount>0) inner += '<span class="price">'+esc(compact(price.amount))+'</span>';
 
-      html += '<button type="button" class="cell seat '+kind+(sel?' selected':'')+(isExit?' exitseat':'')+'"'+
+      html += '<button type="button" class="'+cls+'"'+
         ' data-gi="'+gi+'" data-pi="'+pi+'"'+
         ' data-code="'+esc(seat.code||'')+'"'+
-        ' data-avail="'+(seat.available?'1':'0')+'"'+
+        ' data-avail="'+avail+'"'+
         ' data-price="'+price.amount+'"'+
         ' data-currency="'+esc(price.currency)+'">'+inner+'</button>';
     });
@@ -405,18 +513,26 @@ function renderMap(){
   html += renderPaxTabs();
   html +=
     '<div class="card">'+
-      '<div class="flightbar">'+
-        '<div>'+
-          '<div class="route">'+esc(seg.origin||'?')+' <span class="arrow">→</span> '+esc(seg.destination||'?')+'</div>'+
-          '<div class="fmeta">'+
-            '<span class="pill">'+esc(fltNo)+'</span>'+
-            '<span>'+esc(fmtDate(seg.departure))+' · '+esc(fmtTime(seg.departure))+' – '+esc(fmtTime(seg.arrival))+'</span>'+
-            '<span class="pill">'+esc(seg.equipment||(sm&&sm.aircraft)||'')+'</span>'+
-            '<span class="pill">'+esc(seg.cabinClass||'')+'</span>'+
-          '</div>'+
+      // plane nose
+      '<div class="nose">'+
+        '<div class="nose-plane">'+
+          '<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true">'+
+            '<path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>'+
+          '</svg>'+
         '</div>'+
-        '<div class="fmeta">Selecting for <b style="color:#0f172a">'+esc(paxName(psm,state.paxIdx))+'</b></div>'+
+        '<div class="nose-route">'+
+          '<span class="nose-code">'+esc(seg.origin||'?')+'</span>'+
+          '<span class="nose-arrow">→</span>'+
+          '<span class="nose-code">'+esc(seg.destination||'?')+'</span>'+
+        '</div>'+
+        '<div class="nose-meta">'+
+          esc(fltNo)+' · '+esc(fmtDate(seg.departure))+' · '+esc(fmtTime(seg.departure))+' – '+esc(fmtTime(seg.arrival))+
+          (seg.equipment||(sm&&sm.aircraft) ? ' · '+esc(seg.equipment||(sm&&sm.aircraft)||'') : '')+
+        '</div>'+
       '</div>'+
+      // active passenger
+      '<div class="nose-paxbar">Selecting for <b>'+esc(paxName(psm,state.paxIdx))+'</b></div>'+
+      // seat grid
       '<div class="mapwrap"><div class="grid">'+seatGridHTML(sm,cur.gi,state.paxIdx)+'</div></div>'+
     '</div>'+
     '<div class="card summary" id="summaryCard"></div>';
@@ -542,6 +658,10 @@ document.addEventListener('click', function(e){
   if(seatBtn){
     if(seatBtn.dataset.avail!=='1') return;
     var gi=+seatBtn.dataset.gi, pi=+seatBtn.dataset.pi, code=seatBtn.dataset.code;
+
+    // safety: block if taken by another passenger
+    if(seatTakenByOther(gi, pi, code)) return;
+
     var key=gi+'::'+pi+'::'+code;
     var was=!!state.sel[key];
 

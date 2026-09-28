@@ -33,17 +33,25 @@ body{
 
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:0 1px 2px rgba(15,23,42,.04);overflow:hidden}
 .panel-head{padding:12px 16px;font-weight:800;font-size:12.5px;color:var(--accent-dark);background:var(--accent-soft);border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;letter-spacing:.04em;text-transform:uppercase}
+.pax-count{background:#fff;color:var(--accent-dark);font-weight:800;font-size:11px;padding:3px 9px;border-radius:999px;letter-spacing:0;text-transform:none}
+.pax-count.miss{background:#fee2e2;color:#b91c1c}
 
 .pax-list{padding:10px;display:flex;flex-direction:column;gap:8px}
 .pax-card{display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;cursor:pointer;text-align:left;font-family:inherit;transition:.15s;width:100%}
 .pax-card:hover{border-color:var(--accent);background:#f0fdf4}
 .pax-card.active{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 4px 12px -6px rgba(5,150,105,.4)}
-.pax-avatar{flex:0 0 auto;width:34px;height:34px;border-radius:50%;background:var(--accent);color:#fff;font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center}
+.pax-card.no-seat{border-color:#fecaca;background:#fff7f7}
+.pax-card.no-seat.active{background:#fef2f2;border-color:#f87171}
+.pax-avatar{flex:0 0 auto;width:34px;height:34px;border-radius:50%;background:var(--accent);color:#fff;font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center;position:relative}
 .pax-card.active .pax-avatar{background:var(--accent-dark)}
+.pax-card.no-seat .pax-avatar{background:#dc2626}
+.pax-card.no-seat.active .pax-avatar{background:#b91c1c}
+.pax-avatar .miss-mark{position:absolute;top:-3px;right:-3px;width:14px;height:14px;border-radius:50%;background:#dc2626;color:#fff;font-size:9px;font-weight:900;display:flex;align-items:center;justify-content:center;border:2px solid #fff}
 .pax-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
 .pax-name{font-size:13px;font-weight:700;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pax-seat{font-size:11px;color:var(--muted);font-weight:600}
 .pax-seat.has{color:var(--accent-dark)}
+.pax-seat.miss{color:#dc2626}
 
 .map-col{display:flex;flex-direction:column;gap:12px;min-width:0}
 
@@ -56,7 +64,6 @@ body{
 .tab .done{color:#16a34a}
 .tab.active .done{color:#bbf7d0}
 
-/* ============ PLANE ============ */
 .plane-card{background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 1px 2px rgba(15,23,42,.04);overflow:hidden}
 .plane-flight-bar{padding:10px 18px;background:#f8fafc;border-bottom:1px solid var(--line);text-align:center;font-size:12.5px;color:var(--muted)}
 .plane-flight-bar b{color:var(--accent-dark)}
@@ -79,13 +86,8 @@ body{
 .cell.wall{background:#e2e8f0;border-radius:4px;border:none}
 .cell.blank{background:transparent;border:none}
 
-/* Row gap — vertical dots, no line */
 .cell.gapcell{border:none;background:transparent;height:20px;position:relative}
-.cell.gapcell::after{
-  content:"";position:absolute;left:50%;top:50%;
-  width:4px;height:4px;border-radius:50%;background:#cbd5e1;
-  transform:translate(-50%,-50%);opacity:.55;
-}
+.cell.gapcell::after{content:"";position:absolute;left:50%;top:50%;width:4px;height:4px;border-radius:50%;background:#cbd5e1;transform:translate(-50%,-50%);opacity:.55}
 .rnum.gapnum{color:#94a3b8;font-size:15px;line-height:1;font-weight:700;opacity:.75}
 
 button.cell.seat{cursor:pointer;transition:transform .08s,box-shadow .12s}
@@ -144,12 +146,9 @@ button.cell.seat:active{transform:translateY(0)}
 
 .err,.load{padding:40px;text-align:center;color:var(--muted);background:#fff;border-radius:14px;border:1px solid var(--line);margin-top:20px}
 
-/* ============ TABLET ============ */
 @media (max-width:1100px){
   .layout{grid-template-columns:1fr;gap:14px;padding:14px}
-  .left-panel{order:1}
-  .map-col{order:2}
-  .right-panel{order:3}
+  .left-panel{order:1}.map-col{order:2}.right-panel{order:3}
   .pax-list{flex-direction:row;overflow-x:auto;padding:10px;gap:8px;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
   .pax-list::-webkit-scrollbar{height:5px}
   .pax-list::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px}
@@ -157,27 +156,24 @@ button.cell.seat:active{transform:translateY(0)}
   .sum-body{max-height:none}
 }
 
-/* ============ MOBILE — fit to screen ============ */
 @media (max-width:640px){
   body{padding-bottom:calc(78px + env(safe-area-inset-bottom,0px))}
-
   .topbar{padding:10px 14px}
   .topbar-in{gap:6px}
   .brand{font-size:14.5px}
   .topbar .meta{font-size:10.5px}
-
   .layout{padding:8px;gap:10px;grid-template-columns:1fr}
-
   .panel-head{padding:9px 12px;font-size:11px}
+  .pax-count{font-size:10px;padding:2px 7px}
 
   .pax-list{padding:8px;gap:6px}
   .pax-card{min-width:130px;padding:7px 9px;border-radius:10px}
   .pax-avatar{width:26px;height:26px;font-size:12px}
+  .pax-avatar .miss-mark{width:12px;height:12px;font-size:8px}
   .pax-name{font-size:11.5px}
   .pax-seat{font-size:10px}
 
   .map-col{gap:8px}
-
   .tabs{gap:6px}
   .tab{padding:5px 9px;font-size:11px;border-radius:8px}
   .tab .sub{font-size:9.5px;margin-top:1px}
@@ -185,13 +181,11 @@ button.cell.seat:active{transform:translateY(0)}
   .tabs::-webkit-scrollbar{display:none}
   .tab{flex:0 0 auto}
 
-  /* plane shell hugs content */
   .plane-flight-bar{padding:8px 10px;font-size:11px}
   .plane-wrap{padding:10px 2px 14px}
   .plane-shell{max-width:100%}
   .plane-body{border-left-width:1.5px;border-right-width:1.5px}
 
-  /* seat grid fits mobile width */
   .mapwrap{padding:6px 2px}
   .srow{gap:2px;margin-bottom:2px}
   .cell{width:27px;height:29px;flex:0 0 27px;font-size:10px;border-radius:6px}
@@ -207,7 +201,6 @@ button.cell.seat:active{transform:translateY(0)}
   .seat.occupied::after{font-size:13px}
   .seat.selected{border-width:2px}
 
-  /* legend */
   .legend-list{padding:10px;gap:7px}
   .lg{font-size:11.5px;gap:8px}
   .sw{width:16px;height:16px;border-radius:5px;flex:0 0 16px}
@@ -215,7 +208,6 @@ button.cell.seat:active{transform:translateY(0)}
   .sw.occ::after{font-size:10px}
   .lg small{font-size:10px}
 
-  /* summary */
   .sum-body{padding:6px 8px}
   .sum-item{gap:8px;padding:8px 6px;flex-wrap:wrap}
   .sum-seat{font-size:11px;padding:4px 6px;min-width:40px;border-radius:6px}
@@ -226,13 +218,11 @@ button.cell.seat:active{transform:translateY(0)}
   .sum-foot{font-size:12.5px;padding:10px 12px}
   .empty-sum{padding:20px 12px;font-size:12px}
 
-  /* confirm bar */
   .confirmbar{padding:8px 10px calc(8px + env(safe-area-inset-bottom,0px));gap:8px}
   .confirmbar .info{font-size:11.5px;line-height:1.25}
   .confirmbar button{padding:8px 14px;font-size:12px;border-radius:8px}
 }
 
-/* ============ TINY PHONES ============ */
 @media (max-width:380px){
   .cell{width:23px;height:26px;flex:0 0 23px;font-size:9px;border-radius:5px}
   .cell.side{width:1px;flex:0 0 1px}
@@ -259,7 +249,7 @@ button.cell.seat:active{transform:translateY(0)}
 
 <div class="layout" id="layout" style="display:none">
   <aside class="panel left-panel">
-    <div class="panel-head">Passengers</div>
+    <div class="panel-head" id="paxHeader"><span>Passengers</span></div>
     <div class="pax-list" id="paxPanel"></div>
   </aside>
 
@@ -335,6 +325,13 @@ function fmtTime(iso){if(!iso)return '';var m=/T(\d{2}):(\d{2})/.exec(iso);retur
 function fmtDate(iso){if(!iso)return '';var m=/^(\d{4})-(\d{2})-(\d{2})/.exec(iso);if(!m)return '';var M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return parseInt(m[3])+' '+M[parseInt(m[2])-1];}
 function compact(a){if(!a)return '';if(a>=1000000)return (a/1000000).toFixed(1)+'M';if(a>=1000)return (a/1000).toFixed(a>=10000?0:1)+'k';return String(a);}
 function prettyDesignation(s){return String(s||'').toLowerCase().replace(/_/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase();});}
+
+/* clamp paxIdx without resetting to 0 */
+function clampPaxIdx(len){
+  if(len<=0){state.paxIdx=0;return;}
+  if(state.paxIdx>=len) state.paxIdx=len-1;
+  if(state.paxIdx<0) state.paxIdx=0;
+}
 
 function buildPassengerRegistry(data){
   var reg={};
@@ -413,7 +410,15 @@ function renderTripTabs(){
     var lastSeg=(state.data.segmentSeatMaps[t.segments[t.segments.length-1]]||{}).segment||{};
     var route=(first.origin||'?')+' → '+(lastSeg.destination||'?');
     var label=state.trips.length===2?(i===0?'Outbound':'Return'):('Trip '+(i+1));
-    html+='<button class="tab'+(i===state.tripIdx?' active':'')+'" data-trip="'+i+'">'+esc(label)+'<span class="sub">'+esc(route)+'</span></button>';
+    // show progress for this trip
+    var totalSegs=t.segments.length;
+    var doneCount=t.segments.filter(function(gi){
+      var ssm=state.data.segmentSeatMaps[gi];
+      var list=paxList(ssm);
+      return list.every(function(_,pi){return !!selectedFor(gi,pi);});
+    }).length;
+    var badge = doneCount===totalSegs ? ' <span class="done">✓</span>' : '';
+    html+='<button class="tab'+(i===state.tripIdx?' active':'')+'" data-trip="'+i+'">'+esc(label)+badge+'<span class="sub">'+esc(route)+'</span></button>';
   });
   return html+'</div>';
 }
@@ -433,26 +438,44 @@ function renderSegTabs(){
 }
 function renderPaxPanel(){
   var cur=currentSSM();
-  if(!cur){document.getElementById('paxPanel').innerHTML='';return;}
-  var list=paxList(cur.ssm);if(state.paxIdx>=list.length)state.paxIdx=0;
+  if(!cur){document.getElementById('paxPanel').innerHTML='';document.getElementById('paxHeader').innerHTML='<span>Passengers</span>';return;}
+  var list=paxList(cur.ssm);
+  clampPaxIdx(list.length);
+
+  var selectedCount=0;
   var html='';
   list.forEach(function(psm,i){
-    var sel=selectedFor(cur.gi,i);var active=i===state.paxIdx;
-    html+='<button class="pax-card'+(active?' active':'')+'" data-pax-idx="'+i+'">'+
-      '<span class="pax-avatar">'+esc(String.fromCharCode(65+i))+'</span>'+
+    var sel=selectedFor(cur.gi,i);
+    if(sel) selectedCount++;
+    var active=i===state.paxIdx;
+    var hasSeat=!!sel;
+    var cls='pax-card'+(active?' active':'')+(hasSeat?'':' no-seat');
+    html+='<button type="button" class="'+cls+'" data-pax-idx="'+i+'">'+
+      '<span class="pax-avatar">'+esc(String.fromCharCode(65+i))+
+        (hasSeat?'':'<span class="miss-mark">!</span>')+
+      '</span>'+
       '<span class="pax-info"><span class="pax-name">'+esc(paxName(psm,i))+'</span>'+
-      '<span class="pax-seat'+(sel?' has':'')+'">'+(sel?('Seat '+esc(sel.code)):'Select seat')+'</span></span></button>';
+      '<span class="pax-seat '+(hasSeat?'has':'miss')+'">'+(hasSeat?('Seat '+esc(sel.code)):'No seat selected')+'</span></span></button>';
   });
   document.getElementById('paxPanel').innerHTML=html;
+
+  var allDone=selectedCount===list.length;
+  document.getElementById('paxHeader').innerHTML =
+    '<span>Passengers</span>'+
+    '<span class="pax-count'+(allDone?'':' miss')+'">'+selectedCount+' / '+list.length+'</span>';
 }
 function renderFlightBar(){
   var cur=currentSSM();if(!cur){document.getElementById('flightBar').innerHTML='';return;}
   var ssm=cur.ssm;var seg=ssm.segment||{};var fl=seg.flight||{};
-  var list=paxList(ssm);if(state.paxIdx>=list.length)state.paxIdx=0;
+  var list=paxList(ssm);
+  clampPaxIdx(list.length);
   var psm=list[state.paxIdx];var sm=ssm.seatMap||psm.seatMap;
   var fltNo=(fl.airlineCode||'')+(fl.flightNumber||'');
+  var sel=selectedFor(cur.gi,state.paxIdx);
+  var status=sel?(' · ✓ '+esc(sel.code)):' · <span style="color:#dc2626;font-weight:700">no seat yet</span>';
   document.getElementById('flightBar').innerHTML =
-    'Selecting for <b>'+esc(paxName(psm,state.paxIdx))+'</b> · '+
+    'Selecting for <b>'+esc(paxName(psm,state.paxIdx))+'</b>'+
+    status+'<br>'+
     esc(seg.origin||'?')+' → '+esc(seg.destination||'?')+' · '+
     esc(fltNo)+' · '+esc(fmtDate(seg.departure))+' '+esc(fmtTime(seg.departure))+
     (sm&&sm.aircraft?' · '+esc(sm.aircraft):'');
@@ -461,7 +484,9 @@ function renderSeatGrid(){
   var cur=currentSSM();
   if(!cur){document.getElementById('seatGrid').innerHTML='';return;}
   var ssm=cur.ssm;var gi=cur.gi;var pi=state.paxIdx;
-  var list=paxList(ssm);if(pi>=list.length)pi=0;
+  var list=paxList(ssm);
+  clampPaxIdx(list.length);
+  pi=state.paxIdx;
   var psm=list[pi];var sm=ssm.seatMap||psm.seatMap;
   var cabins=(sm&&sm.cabins)||[];
   if(!cabins.length){document.getElementById('seatGrid').innerHTML='<div class="empty-sum">No cabin data.</div>';return;}
@@ -591,15 +616,24 @@ function submitSelection(){
 document.addEventListener('click', function(e){
   var t=e.target;
   var tripBtn=t.closest&&t.closest('[data-trip]');
-  if(tripBtn){state.tripIdx=+tripBtn.dataset.trip;state.segIdx=0;state.paxIdx=0;renderAll();return;}
+  if(tripBtn){
+    state.tripIdx=+tripBtn.dataset.trip;
+    state.segIdx=0;
+    /* DO NOT reset paxIdx — keep current passenger */
+    renderAll();return;
+  }
   var segBtn=t.closest&&t.closest('[data-seg-idx]');
-  if(segBtn){state.segIdx=+segBtn.dataset.segIdx;state.paxIdx=0;renderAll();return;}
+  if(segBtn){
+    state.segIdx=+segBtn.dataset.segIdx;
+    /* DO NOT reset paxIdx */
+    renderAll();return;
+  }
   var paxBtn=t.closest&&t.closest('[data-pax-idx]');
   if(paxBtn){state.paxIdx=+paxBtn.dataset.paxIdx;renderAll();return;}
   var seatBtn=t.closest&&t.closest('button.seat');
   if(seatBtn){
     if(seatBtn.dataset.avail!=='1')return;
-    var gi=+seatBtn.dataset.gi,pi=+seatBtn.dataset.pi,code=seatBtn.dataset.code;
+    var gi=+seatBtn.dataset.gi,pi=+seatBtn.dataset.paxIdx||+seatBtn.dataset.pi,code=seatBtn.dataset.code;
     if(!isSelectableSeat(seatForCode(gi,code)))return;
     if(seatTakenByInfo(gi,pi,code))return;
     var key=gi+'::'+pi+'::'+code;var was=!!state.sel[key];

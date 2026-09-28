@@ -16,11 +16,11 @@
   --accent:#059669;--accent-dark:#047857;--accent-soft:#d1fae5;
 }
 *{box-sizing:border-box}
-html,body{margin:0;padding:0}
+html,body{margin:0;padding:0;overflow-x:hidden}
 body{
   font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   background:var(--bg);color:var(--ink);
-  padding-bottom:calc(96px + env(safe-area-inset-bottom,0px));
+  padding-bottom:calc(88px + env(safe-area-inset-bottom,0px));
   -webkit-font-smoothing:antialiased;
 }
 
@@ -61,8 +61,8 @@ body{
 .plane-flight-bar{padding:10px 18px;background:#f8fafc;border-bottom:1px solid var(--line);text-align:center;font-size:12.5px;color:var(--muted)}
 .plane-flight-bar b{color:var(--accent-dark)}
 
-.plane-wrap{display:flex;justify-content:center;padding:20px 12px 26px;background:linear-gradient(180deg,#f0fdf4 0%,#ffffff 100%);overflow-x:auto}
-.plane-shell{display:inline-flex;flex-direction:column;align-items:center;position:relative;filter:drop-shadow(0 14px 28px rgba(5,150,105,.09))}
+.plane-wrap{display:flex;justify-content:center;padding:20px 12px 26px;background:linear-gradient(180deg,#f0fdf4 0%,#ffffff 100%);overflow-x:hidden}
+.plane-shell{display:inline-flex;flex-direction:column;align-items:center;position:relative;filter:drop-shadow(0 14px 28px rgba(5,150,105,.09));max-width:100%}
 
 .plane-nose{display:block;width:100%;height:auto;margin-bottom:-1px}
 .plane-body{position:relative;background:#fff;border-left:2px solid #10b981;border-right:2px solid #10b981;width:100%}
@@ -78,9 +78,15 @@ body{
 .cell.colhead{height:26px;background:transparent;border:none;color:#94a3b8;font-size:11.5px;letter-spacing:.05em}
 .cell.wall{background:#e2e8f0;border-radius:4px;border:none}
 .cell.blank{background:transparent;border:none}
-.cell.gapcell{border:none;background:transparent;height:12px;position:relative;border-radius:0}
-.cell.gapcell::after{content:"";position:absolute;left:0;right:0;top:50%;height:0;border-top:2px dashed #cbd5e1}
-.rnum.gapnum{font-size:14px;color:#cbd5e1;letter-spacing:2px;font-weight:900}
+
+/* Row gap — vertical dots, no line */
+.cell.gapcell{border:none;background:transparent;height:20px;position:relative}
+.cell.gapcell::after{
+  content:"";position:absolute;left:50%;top:50%;
+  width:4px;height:4px;border-radius:50%;background:#cbd5e1;
+  transform:translate(-50%,-50%);opacity:.55;
+}
+.rnum.gapnum{color:#94a3b8;font-size:15px;line-height:1;font-weight:700;opacity:.75}
 
 button.cell.seat{cursor:pointer;transition:transform .08s,box-shadow .12s}
 button.cell.seat:hover{transform:translateY(-1px);box-shadow:0 4px 10px -3px rgba(15,23,42,.35)}
@@ -138,43 +144,107 @@ button.cell.seat:active{transform:translateY(0)}
 
 .err,.load{padding:40px;text-align:center;color:var(--muted);background:#fff;border-radius:14px;border:1px solid var(--line);margin-top:20px}
 
+/* ============ TABLET ============ */
 @media (max-width:1100px){
   .layout{grid-template-columns:1fr;gap:14px;padding:14px}
-  .left-panel{order:1}.map-col{order:2}.right-panel{order:3}
+  .left-panel{order:1}
+  .map-col{order:2}
+  .right-panel{order:3}
   .pax-list{flex-direction:row;overflow-x:auto;padding:10px;gap:8px;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
   .pax-list::-webkit-scrollbar{height:5px}
   .pax-list::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px}
   .pax-card{flex:0 0 auto;min-width:170px}
   .sum-body{max-height:none}
 }
+
+/* ============ MOBILE — fit to screen ============ */
 @media (max-width:640px){
-  .layout{padding:10px;gap:10px}
-  .plane-wrap{padding:16px 6px 20px}
-  .mapwrap{padding:10px 12px}
-  .cell{width:34px;height:34px;flex:0 0 34px;font-size:11px;border-radius:7px}
-  .cell.side{width:3px;flex:0 0 3px}
-  .cell.aislecell{width:12px;flex:0 0 12px}
-  .cell.colhead{height:20px;font-size:10px}
-  .rnum{width:24px;flex:0 0 24px;font-size:9.5px}
-  .seat .price{font-size:7px}
-  .seat.other-pax .pax-badge{width:14px;height:14px;font-size:8.5px;top:-4px;right:-4px}
-  .seat.occupied::after{font-size:14px}
+  body{padding-bottom:calc(78px + env(safe-area-inset-bottom,0px))}
+
   .topbar{padding:10px 14px}
-  .brand{font-size:15px}
-  .tab{padding:6px 10px;font-size:12px}
-  .tab .sub{font-size:10px}
-  .tabs{flex-wrap:nowrap;overflow-x:auto;padding-bottom:6px;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
-  .tabs::-webkit-scrollbar{height:4px}
-  .tabs::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:2px}
+  .topbar-in{gap:6px}
+  .brand{font-size:14.5px}
+  .topbar .meta{font-size:10.5px}
+
+  .layout{padding:8px;gap:10px;grid-template-columns:1fr}
+
+  .panel-head{padding:9px 12px;font-size:11px}
+
+  .pax-list{padding:8px;gap:6px}
+  .pax-card{min-width:130px;padding:7px 9px;border-radius:10px}
+  .pax-avatar{width:26px;height:26px;font-size:12px}
+  .pax-name{font-size:11.5px}
+  .pax-seat{font-size:10px}
+
+  .map-col{gap:8px}
+
+  .tabs{gap:6px}
+  .tab{padding:5px 9px;font-size:11px;border-radius:8px}
+  .tab .sub{font-size:9.5px;margin-top:1px}
+  .tabs{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .tabs::-webkit-scrollbar{display:none}
   .tab{flex:0 0 auto}
-  .pax-card{min-width:150px;padding:8px 10px}
-  .pax-avatar{width:30px;height:30px;font-size:13px}
-  .pax-name{font-size:12.5px}
-  .sum-item{flex-wrap:wrap}
-  .sum-price{margin-left:0;width:100%;text-align:left}
-  .confirmbar{padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));gap:8px}
-  .confirmbar .info{font-size:12px}
-  .confirmbar button{padding:9px 16px;font-size:13px}
+
+  /* plane shell hugs content */
+  .plane-flight-bar{padding:8px 10px;font-size:11px}
+  .plane-wrap{padding:10px 2px 14px}
+  .plane-shell{max-width:100%}
+  .plane-body{border-left-width:1.5px;border-right-width:1.5px}
+
+  /* seat grid fits mobile width */
+  .mapwrap{padding:6px 2px}
+  .srow{gap:2px;margin-bottom:2px}
+  .cell{width:27px;height:29px;flex:0 0 27px;font-size:10px;border-radius:6px}
+  .cell.side{width:2px;flex:0 0 2px}
+  .cell.aislecell{width:7px;flex:0 0 7px}
+  .cell.colhead{height:15px;font-size:8.5px}
+  .cell.gapcell{height:14px}
+  .cell.gapcell::after{width:3px;height:3px}
+  .rnum{width:20px;flex:0 0 20px;font-size:8.5px}
+  .rnum.gapnum{font-size:12px}
+  .seat .price{font-size:6px;margin-top:0}
+  .seat.other-pax .pax-badge{width:12px;height:12px;font-size:7px;top:-3px;right:-3px;border-width:1.5px}
+  .seat.occupied::after{font-size:13px}
+  .seat.selected{border-width:2px}
+
+  /* legend */
+  .legend-list{padding:10px;gap:7px}
+  .lg{font-size:11.5px;gap:8px}
+  .sw{width:16px;height:16px;border-radius:5px;flex:0 0 16px}
+  .sw.other::after{width:11px;height:11px;font-size:7px;inset:-3px -3px auto auto}
+  .sw.occ::after{font-size:10px}
+  .lg small{font-size:10px}
+
+  /* summary */
+  .sum-body{padding:6px 8px}
+  .sum-item{gap:8px;padding:8px 6px;flex-wrap:wrap}
+  .sum-seat{font-size:11px;padding:4px 6px;min-width:40px;border-radius:6px}
+  .sum-meta{flex:1 1 100%;order:2}
+  .sum-meta b{font-size:11.5px}
+  .sum-meta span{font-size:10.5px}
+  .sum-price{font-size:11.5px;order:1;margin-left:auto}
+  .sum-foot{font-size:12.5px;padding:10px 12px}
+  .empty-sum{padding:20px 12px;font-size:12px}
+
+  /* confirm bar */
+  .confirmbar{padding:8px 10px calc(8px + env(safe-area-inset-bottom,0px));gap:8px}
+  .confirmbar .info{font-size:11.5px;line-height:1.25}
+  .confirmbar button{padding:8px 14px;font-size:12px;border-radius:8px}
+}
+
+/* ============ TINY PHONES ============ */
+@media (max-width:380px){
+  .cell{width:23px;height:26px;flex:0 0 23px;font-size:9px;border-radius:5px}
+  .cell.side{width:1px;flex:0 0 1px}
+  .cell.aislecell{width:5px;flex:0 0 5px}
+  .cell.colhead{height:13px;font-size:7.5px}
+  .rnum{width:16px;flex:0 0 16px;font-size:7.5px}
+  .srow{gap:1px}
+  .seat .price{display:none}
+  .brand{font-size:13px}
+  .tab{padding:4px 8px;font-size:10.5px}
+  .pax-card{min-width:118px;padding:6px 8px}
+  .pax-avatar{width:22px;height:22px;font-size:11px}
 }
 </style>
 </head>
@@ -264,9 +334,7 @@ function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){retur
 function fmtTime(iso){if(!iso)return '';var m=/T(\d{2}):(\d{2})/.exec(iso);return m?m[1]+':'+m[2]:'';}
 function fmtDate(iso){if(!iso)return '';var m=/^(\d{4})-(\d{2})-(\d{2})/.exec(iso);if(!m)return '';var M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return parseInt(m[3])+' '+M[parseInt(m[2])-1];}
 function compact(a){if(!a)return '';if(a>=1000000)return (a/1000000).toFixed(1)+'M';if(a>=1000)return (a/1000).toFixed(a>=10000?0:1)+'k';return String(a);}
-function prettyDesignation(s){
-  return String(s||'').toLowerCase().replace(/_/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase();});
-}
+function prettyDesignation(s){return String(s||'').toLowerCase().replace(/_/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase();});}
 
 function buildPassengerRegistry(data){
   var reg={};
@@ -400,7 +468,6 @@ function renderSeatGrid(){
   var cab=cabins[0];var cols=cab.seatColumns||[];var rows=cab.seatRows||[];
   var html='';
 
-  // Column header
   html+='<div class="srow"><div class="rnum"></div>';
   cols.forEach(function(c){
     if(c==='LEFT_SIDE'||c==='RIGHT_SIDE')html+='<div class="cell side"></div>';
@@ -409,23 +476,21 @@ function renderSeatGrid(){
   });
   html+='</div>';
 
-  // Rows with gap detection
-  var prevRowNum = null;
+  var prevRowNum=null;
   rows.forEach(function(row){
     var seats=row.seats||[];
-    var rn = parseInt(row.rowNumber, 10);
+    var rn=parseInt(row.rowNumber,10);
 
-    // Insert visual gap if row number jumps by more than 1
-    if(prevRowNum !== null && !isNaN(rn) && !isNaN(prevRowNum) && (rn - prevRowNum) > 1){
-      html += '<div class="srow rowgap"><div class="rnum gapnum">···</div>';
+    if(prevRowNum!==null && !isNaN(rn) && !isNaN(prevRowNum) && (rn-prevRowNum)>1){
+      html+='<div class="srow rowgap"><div class="rnum gapnum">⋮</div>';
       cols.forEach(function(c){
-        if(c==='LEFT_SIDE'||c==='RIGHT_SIDE') html += '<div class="cell side"></div>';
-        else if(c==='AISLE') html += '<div class="cell aislecell"></div>';
-        else html += '<div class="cell gapcell"></div>';
+        if(c==='LEFT_SIDE'||c==='RIGHT_SIDE') html+='<div class="cell side"></div>';
+        else if(c==='AISLE') html+='<div class="cell aislecell"></div>';
+        else html+='<div class="cell gapcell"></div>';
       });
-      html += '</div>';
+      html+='</div>';
     }
-    prevRowNum = rn;
+    prevRowNum=rn;
 
     html+='<div class="srow"><div class="rnum">'+esc(row.rowNumber)+'</div>';
     cols.forEach(function(c,i){
@@ -446,22 +511,16 @@ function renderSeatGrid(){
 
       var inner;
       if(otherInfo){
-        inner = '<span>'+esc(seat.code||c)+'</span>';
+        inner='<span>'+esc(seat.code||c)+'</span>';
       } else {
-        inner = '<span>'+esc(c)+'</span>';
-        if(sk==='paid'&&price.amount>0) inner += '<span class="price">'+esc(compact(price.amount))+'</span>';
+        inner='<span>'+esc(c)+'</span>';
+        if(sk==='paid'&&price.amount>0) inner+='<span class="price">'+esc(compact(price.amount))+'</span>';
       }
-      if(otherInfo){
-        inner += '<span class="pax-badge">'+esc(otherInfo.initial)+'</span>';
-      }
+      if(otherInfo){inner+='<span class="pax-badge">'+esc(otherInfo.initial)+'</span>';}
 
-      var designations = (seat.designations||[]).map(prettyDesignation).filter(Boolean);
-      var baseTooltip = otherInfo ? ('In your group — ' + otherInfo.name)
-        : sk==='occupied' ? 'Taken by another passenger'
-        : sk==='free' ? 'Free seat'
-        : sk==='paid' ? new Intl.NumberFormat('en-US').format(price.amount)+' '+(price.currency||'ETB')
-        : 'Unavailable';
-      var tooltip = designations.length ? (baseTooltip + ' · ' + designations.join(' · ')) : baseTooltip;
+      var designations=(seat.designations||[]).map(prettyDesignation).filter(Boolean);
+      var baseTooltip=otherInfo?('In your group — '+otherInfo.name):sk==='occupied'?'Taken by another passenger':sk==='free'?'Free seat':sk==='paid'?new Intl.NumberFormat('en-US').format(price.amount)+' '+(price.currency||'ETB'):'Unavailable';
+      var tooltip=designations.length?(baseTooltip+' · '+designations.join(' · ')):baseTooltip;
 
       html+='<button type="button" class="'+cls+'" data-gi="'+gi+'" data-pi="'+pi+'" data-code="'+esc(seat.code||'')+'" data-avail="'+avail+'" data-price="'+price.amount+'" data-currency="'+esc(price.currency)+'" title="'+esc(tooltip)+'"'+(avail==='1'?'':' aria-disabled="true"')+'>'+inner+'</button>';
     });

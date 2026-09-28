@@ -8,9 +8,9 @@
 <style>
 :root{
   --bg:#eef2f7;--panel:#fff;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;
-  --free-bg:#dcfce7;--free-bd:#86efac;--free-ink:#166534;
-  --paid-bg:#dbeafe;--paid-bd:#93c5fd;--paid-ink:#1d4ed8;
-  --occ-bg:#edf0f4;--occ-bd:#dfe4ea;--occ-ink:#aab3bf;
+  --free-bg:#16a34a;--free-bd:#15803d;--free-ink:#fff;
+  --paid-bg:#2563eb;--paid-bd:#1d4ed8;--paid-ink:#fff;
+  --occ-bg:#dc2626;--occ-bd:#b91c1c;--occ-ink:#fff;
   --oth-bg:#fef3c7;--oth-bd:#fcd34d;--oth-ink:#92400e;
   --sel-bg:#4f46e5;--sel-bd:#4338ca;
   --accent:#4f46e5;
@@ -121,19 +121,20 @@ button.cell.seat:hover{transform:translateY(-1px);box-shadow:0 4px 10px -3px rgb
 button.cell.seat:active{transform:translateY(0)}
 .seat.free{background:var(--free-bg);border-color:var(--free-bd);color:var(--free-ink)}
 .seat.paid{background:var(--paid-bg);border-color:var(--paid-bd);color:var(--paid-ink)}
-.seat.occupied{background:var(--occ-bg);border-color:var(--occ-bd);color:var(--occ-ink);cursor:not-allowed}
+.seat.occupied{background:var(--occ-bg);border-color:var(--occ-bd);color:var(--occ-ink);cursor:not-allowed;opacity:.75;pointer-events:none}
 .seat.occupied::after{
-  content:"";position:absolute;inset:0;border-radius:8px;
-  background:repeating-linear-gradient(45deg,transparent 0 5px,rgba(148,163,184,.18) 5px 10px);
+  content:"✕";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  border-radius:8px;color:#fff;font-size:20px;font-weight:900;background:transparent;
 }
 .seat.other-pax{
   background:var(--oth-bg);border-color:var(--oth-bd);color:var(--oth-ink);
-  cursor:not-allowed;position:relative;
+  cursor:not-allowed;pointer-events:none;position:relative;
 }
-.seat.other-pax::after{
-  content:"👤";position:absolute;top:-2px;right:1px;font-size:9px;line-height:1;opacity:.75;
+.seat.other-pax .pax-initial{
+  font-size:22px;font-weight:900;line-height:1;color:var(--oth-ink);letter-spacing:-.5px;
 }
-.seat.selected{background:var(--sel-bg);border-color:var(--sel-bd);color:#fff;box-shadow:0 6px 14px -6px rgba(79,70,229,.9)}
+.seat.selected{background:var(--sel-bg);border-color:var(--sel-bd);color:#fff;box-shadow:0 6px 14px -6px rgba(79,70,229,.9);border:3px solid #fff}
+.seat.unknown{background:#9ca3af;border-color:#6b7280;color:#fff;cursor:not-allowed;pointer-events:none}
 .seat.selected .price{color:#c7d2fe}
 .seat .price{font-size:8.5px;font-weight:700;opacity:.85;line-height:1;margin-top:1px;letter-spacing:-.2px}
 .seat.exitseat{border-style:dashed}
@@ -195,7 +196,7 @@ button.cell.seat:active{transform:translateY(0)}
   .cell.colhead{height:22px;font-size:10.5px}
   .rnum{width:26px;flex:0 0 26px;font-size:10px}
   .seat .price{font-size:7.5px}
-  .seat.other-pax::after{font-size:8px;top:-3px}
+  .seat.other-pax .pax-initial{font-size:18px}
   .mapwrap{padding:12px}
 
   .nose{padding:38px 14px 14px;border-radius:100px 100px 0 0}
@@ -321,40 +322,77 @@ function paxName(psm,i){
 function selectedFor(gi,pi){
   var pre=gi+'::'+pi+'::';
   var k=Object.keys(state.sel).find(function(key){ return key.indexOf(pre)===0; });
-  return k?state.sel[k]:null;
+  var selection=k?state.sel[k]:null;
+  return selection&&isSelectableSeat(seatForCode(gi,selection.code))?selection:null;
 }
 
 /* ---------- CROSS-PASSENGER LOCK ----------
-   Returns true if seat `code` on segment `gi` was already selected by
-   a DIFFERENT passenger than `pi`. */
-function seatTakenByOther(gi, pi, code){
-  if(!code) return false;
+   Returns info about the OTHER passenger who picked this seat, or null. */
+function seatTakenByInfo(gi, pi, code){
+  if(!code) return null;
   var segPre = gi + '::';
   var myPre  = gi + '::' + pi + '::';
-  return Object.keys(state.sel).some(function(k){
+  var key = Object.keys(state.sel).find(function(k){
     if(k.indexOf(segPre) !== 0) return false;
-    if(k.indexOf(myPre) === 0) return false; // my own selection
+    if(k.indexOf(myPre) === 0) return false;
     return state.sel[k].code === code;
   });
+  if(!key) return null;
+  var otherPi = parseInt(key.split('::')[1], 10);
+  var ssm  = state.data.segmentSeatMaps[gi];
+  var list = paxList(ssm);
+  var name = paxName(list[otherPi], otherPi);
+  var initial = (String(name).trim()[0] || '?').toUpperCase();
+  return { pi: otherPi, name: name, initial: initial };
 }
 
 function seatPrice(seat){
   if(!seat) return {amount:0,currency:''};
+  var totalPrice=seat.totalPrice;
+  if(totalPrice&&typeof totalPrice.amount==='number') return {amount:totalPrice.amount,currency:totalPrice.currency||''};
   var t=seat.total&&seat.total.alternatives&&seat.total.alternatives[0]&&seat.total.alternatives[0][0];
   if(t&&typeof t.amount==='number') return {amount:t.amount, currency:t.currency||''};
   var p=seat.prices&&seat.prices.alternatives&&seat.prices.alternatives[0]&&seat.prices.alternatives[0][0];
   if(p&&typeof p.amount==='number') return {amount:p.amount, currency:p.currency||''};
   return {amount:0, currency:''};
 }
+function seatIsOccupied(seat){
+  if(!seat) return false;
+  if(seat.available===false||seat.occupied===true||seat.isOccupied===true) return true;
+  var occupation=seat.seatOccupation;
+  if(occupation===true) return true;
+  if(typeof occupation==='string') return /^(TAKEN|OCCUPIED|UNAVAILABLE)$/i.test(occupation);
+  return !!(occupation&&typeof occupation==='object'&&(
+    occupation.occupied===true||occupation.isOccupied===true||
+    /^(TAKEN|OCCUPIED|UNAVAILABLE)$/i.test(occupation.status||occupation.code||occupation.type||'')
+  ));
+}
 function seatKind(seat){
-  if(!seat) return 'blank';
-  var c=seat.storefrontSlotCode;
-  if(c==='BULKHEAD') return 'wall';
-  if(c==='AISLE') return 'aislecell';
-  if(c==='BLANK') return 'blank';
-  if(c!=='SEAT') return 'blank';
-  if(!seat.available) return 'occupied';
-  return seatPrice(seat).amount>0 ? 'paid' : 'free';
+  if(!seat||seat.storefrontSlotCode!=='SEAT') return 'blank';
+  if(seatIsOccupied(seat)) return 'occupied';
+  if(seat.available!==true) return 'unknown';
+  var free=typeof seat.free==='boolean'?seat.free:seat.freeOfCharge;
+  if(free===false) return 'paid';
+  if(free===true) return 'free';
+  return 'unknown';
+}
+function isSelectableSeat(seat){
+  var kind=seatKind(seat);
+  return kind==='free'||kind==='paid';
+}
+function seatForCode(gi,code){
+  var ssm=state.data&&state.data.segmentSeatMaps&&state.data.segmentSeatMaps[gi];
+  var cabins=ssm&&ssm.seatMap&&ssm.seatMap.cabins||[];
+  for(var i=0;i<cabins.length;i++){
+    var rows=cabins[i].seatRows||[];
+    for(var j=0;j<rows.length;j++){
+      var seats=rows[j].seats||[];
+      for(var k=0;k<seats.length;k++){
+        if(seats[k]&&seats[k].code===code) return seats[k];
+      }
+    }
+  }
+  return null;
 }
 function currentSSM(){
   var trip=state.trips[state.tripIdx];
@@ -370,9 +408,9 @@ function renderLegend(){
     '<div class="legend">'+
       '<span class="lg"><i class="sw free"></i>Free</span>'+
       '<span class="lg"><i class="sw paid"></i>Paid</span>'+
+      '<span class="lg"><i class="sw occ"></i>Taken</span>'+
       '<span class="lg"><i class="sw sel"></i>Selected</span>'+
       '<span class="lg"><i class="sw other"></i>Other pax</span>'+
-      '<span class="lg"><i class="sw occ"></i>Occupied</span>'+
     '</div>';
 }
 function renderTripTabs(){
@@ -456,39 +494,49 @@ function seatGridHTML(sm,gi,pi){
 
       var seat=seats[i];
       var sk=seatKind(seat);
-      if(sk==='blank'||sk==='wall'||sk==='aislecell'){
-        html += '<div class="cell '+sk+'"></div>';
+      if(sk==='blank'){
+        html += '<div class="cell blank"></div>';
         return;
       }
 
       var key=gi+'::'+pi+'::'+(seat.code||'');
-      var isSelected = !!state.sel[key];
-      var takenByOther = seatTakenByOther(gi, pi, seat.code);
+      var isSelected = !!state.sel[key]&&isSelectableSeat(seat);
+      var otherInfo = seatTakenByInfo(gi, pi, seat.code);
       var price=seatPrice(seat);
-      var isExit=(seat.slotCharacteristics||[]).indexOf('EXIT')!==-1;
+      var characteristics=seat.characteristics||seat.seatCharacteristics||seat.slotCharacteristics||[];
+      var isExit=characteristics.indexOf('EXIT')!==-1;
 
       var cls='cell seat '+sk;
-      var avail;
-      if(takenByOther){
+      var avail=isSelectableSeat(seat)?'1':'0';
+      if(otherInfo){
         cls='cell seat other-pax';
         avail='0';
       } else if(isSelected){
         cls+=' selected';
-        avail='1';
-      } else {
-        avail = seat.available ? '1' : '0';
       }
       if(isExit) cls+=' exitseat';
 
-      var inner='<span>'+esc(c)+'</span>';
-      if(price.amount>0) inner += '<span class="price">'+esc(compact(price.amount))+'</span>';
+      var inner;
+      if(otherInfo){
+        inner = '<span class="pax-initial">'+esc(otherInfo.initial)+'</span>';
+      } else {
+        inner = '<span>'+esc(seat.code||c)+'</span>';
+        if(sk==='paid'&&price.amount>0) inner += '<span class="price">'+esc(compact(price.amount))+'</span>';
+      }
+
+      var tooltip = otherInfo ? ('Selected for ' + otherInfo.name)
+        : sk==='occupied' ? 'Taken'
+        : sk==='free' ? 'Free seat'
+        : sk==='paid' ? new Intl.NumberFormat('en-US').format(price.amount)+' '+(price.currency||'ETB')
+        : 'Unavailable';
 
       html += '<button type="button" class="'+cls+'"'+
         ' data-gi="'+gi+'" data-pi="'+pi+'"'+
         ' data-code="'+esc(seat.code||'')+'"'+
         ' data-avail="'+avail+'"'+
         ' data-price="'+price.amount+'"'+
-        ' data-currency="'+esc(price.currency)+'">'+inner+'</button>';
+        ' data-currency="'+esc(price.currency)+'" title="'+esc(tooltip)+'"'+
+        (avail==='1'?'':' aria-disabled="true"')+'>'+inner+'</button>';
     });
     html += '</div>';
   });
@@ -504,7 +552,7 @@ function renderMap(){
   var list=paxList(ssm);
   if(state.paxIdx>=list.length) state.paxIdx=0;
   var psm=list[state.paxIdx];
-  var sm=psm.seatMap||ssm.seatMap;
+  var sm=ssm.seatMap||psm.seatMap;
   var fltNo=(fl.airlineCode||'')+(fl.flightNumber||'');
 
   var html='';
@@ -513,7 +561,6 @@ function renderMap(){
   html += renderPaxTabs();
   html +=
     '<div class="card">'+
-      // plane nose
       '<div class="nose">'+
         '<div class="nose-plane">'+
           '<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true">'+
@@ -530,9 +577,7 @@ function renderMap(){
           (seg.equipment||(sm&&sm.aircraft) ? ' · '+esc(seg.equipment||(sm&&sm.aircraft)||'') : '')+
         '</div>'+
       '</div>'+
-      // active passenger
       '<div class="nose-paxbar">Selecting for <b>'+esc(paxName(psm,state.paxIdx))+'</b></div>'+
-      // seat grid
       '<div class="mapwrap"><div class="grid">'+seatGridHTML(sm,cur.gi,state.paxIdx)+'</div></div>'+
     '</div>'+
     '<div class="card summary" id="summaryCard"></div>';
@@ -659,8 +704,10 @@ document.addEventListener('click', function(e){
     if(seatBtn.dataset.avail!=='1') return;
     var gi=+seatBtn.dataset.gi, pi=+seatBtn.dataset.pi, code=seatBtn.dataset.code;
 
+    if(!isSelectableSeat(seatForCode(gi,code))) return;
+
     // safety: block if taken by another passenger
-    if(seatTakenByOther(gi, pi, code)) return;
+    if(seatTakenByInfo(gi, pi, code)) return;
 
     var key=gi+'::'+pi+'::'+code;
     var was=!!state.sel[key];

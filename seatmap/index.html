@@ -68,8 +68,9 @@ body{
 .plane-flight-bar{padding:10px 18px;background:#f8fafc;border-bottom:1px solid var(--line);text-align:center;font-size:12.5px;color:var(--muted)}
 .plane-flight-bar b{color:var(--accent-dark)}
 
-.plane-wrap{display:flex;justify-content:center;padding:20px 12px 26px;background:linear-gradient(180deg,#f0fdf4 0%,#ffffff 100%);overflow-x:hidden}
-.plane-shell{display:inline-flex;flex-direction:column;align-items:center;position:relative;filter:drop-shadow(0 14px 28px rgba(5,150,105,.09));max-width:100%}
+/* FIXED: overflow-x: auto so 3-3-3 widebody planes don't clip window seats */
+.plane-wrap{display:flex;justify-content:center;padding:20px 12px 26px;background:linear-gradient(180deg,#f0fdf4 0%,#ffffff 100%);overflow-x:auto;-webkit-overflow-scrolling:touch}
+.plane-shell{display:inline-flex;flex-direction:column;align-items:center;position:relative;filter:drop-shadow(0 14px 28px rgba(5,150,105,.09));min-width:min-content}
 
 .plane-nose{display:block;width:100%;height:auto;margin-bottom:-1px}
 .plane-body{position:relative;background:#fff;border-left:2px solid #10b981;border-right:2px solid #10b981;width:100%}
@@ -146,6 +147,12 @@ button.cell.seat:active{transform:translateY(0)}
 
 .err,.load{padding:40px;text-align:center;color:var(--muted);background:#fff;border-radius:14px;border:1px solid var(--line);margin-top:20px}
 
+/* Celebratory Success Modal */
+.success-card{padding:30px 20px;text-align:center;background:#fff;border-radius:16px;box-shadow:0 8px 30px rgba(0,0,0,.08);margin:30px auto;max-width:500px}
+.success-card h2{color:var(--accent-dark);margin:10px 0;font-size:22px}
+.success-card p{color:var(--muted);font-size:14px;line-height:1.5;margin-bottom:20px}
+.wa-btn{display:inline-block;background:#25d366;color:#fff;text-decoration:none;padding:12px 26px;border-radius:12px;font-weight:800;font-size:15px;box-shadow:0 4px 14px rgba(37,211,102,.4)}
+
 @media (max-width:1100px){
   .layout{grid-template-columns:1fr;gap:14px;padding:14px}
   .left-panel{order:1}.map-col{order:2}.right-panel{order:3}
@@ -183,7 +190,6 @@ button.cell.seat:active{transform:translateY(0)}
 
   .plane-flight-bar{padding:8px 10px;font-size:11px}
   .plane-wrap{padding:10px 2px 14px}
-  .plane-shell{max-width:100%}
   .plane-body{border-left-width:1.5px;border-right-width:1.5px}
 
   .mapwrap{padding:6px 2px}
@@ -326,7 +332,6 @@ function fmtDate(iso){if(!iso)return '';var m=/^(\d{4})-(\d{2})-(\d{2})/.exec(is
 function compact(a){if(!a)return '';if(a>=1000000)return (a/1000000).toFixed(1)+'M';if(a>=1000)return (a/1000).toFixed(a>=10000?0:1)+'k';return String(a);}
 function prettyDesignation(s){return String(s||'').toLowerCase().replace(/_/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase();});}
 
-/* clamp paxIdx without resetting to 0 */
 function clampPaxIdx(len){
   if(len<=0){state.paxIdx=0;return;}
   if(state.paxIdx>=len) state.paxIdx=len-1;
@@ -410,7 +415,6 @@ function renderTripTabs(){
     var lastSeg=(state.data.segmentSeatMaps[t.segments[t.segments.length-1]]||{}).segment||{};
     var route=(first.origin||'?')+' → '+(lastSeg.destination||'?');
     var label=state.trips.length===2?(i===0?'Outbound':'Return'):('Trip '+(i+1));
-    // show progress for this trip
     var totalSegs=t.segments.length;
     var doneCount=t.segments.filter(function(gi){
       var ssm=state.data.segmentSeatMaps[gi];
@@ -574,6 +578,18 @@ function collectSelection(){
   });
   return out;
 }
+
+function totalRequiredSeats(){
+  var count=0;
+  state.trips.forEach(function(t){
+    t.segments.forEach(function(gi){
+      var ssm=state.data.segmentSeatMaps[gi];if(!ssm)return;
+      count += paxList(ssm).length;
+    });
+  });
+  return count;
+}
+
 function renderSummary(){
   var card=document.getElementById('summaryCard');if(!card)return;
   var items=collectSelection();
@@ -603,14 +619,40 @@ function renderAll(){
 function submitSelection(){
   var seats=collectSelection();
   if(!seats.length){alert('Please select at least one seat.');return;}
-  var btn=document.getElementById('cfBtn');btn.disabled=true;btn.textContent='Sending…';
-  fetch(CONFIG.N8N_BASE+'/webhook/seat-selection',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:sessionId,selectedSeats:seats})})
+  var required = totalRequiredSeats();
+  if(seats.length < required){
+    var proceed = confirm('You have selected ' + seats.length + ' of ' + required + ' seats. Some passengers or flights don’t have seats assigned. Proceed anyway?');
+    if(!proceed) return;
+  }
+
+  var btn=document.getElementById('cfBtn');btn.disabled=true;btn.textContent='Confirming…';
+  fetch(CONFIG.N8N_BASE+'/webhook/seat-selection',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({sessionId:sessionId,selectedSeats:seats})
+  })
     .then(function(r){return r.json();})
     .then(function(res){
-      if(res.success){document.getElementById('confirmBar').innerHTML='<div style="font-size:14px;color:#047857;font-weight:700">✓ Seats confirmed. You can close this page and return to WhatsApp.</div>';}
-      else{throw new Error(res.message||'Failed');}
+      if(res.success){
+        document.getElementById('layout').style.display='none';
+        document.getElementById('confirmBar').style.display='none';
+        document.getElementById('app').style.display='block';
+        document.getElementById('app').innerHTML =
+          '<div class="success-card">' +
+            '<div style="font-size:48px;margin-bottom:12px">🎉</div>' +
+            '<h2>Seats Confirmed!</h2>' +
+            '<p>Your seats have been successfully reserved and added to your Ethiopian Airlines booking.</p>' +
+            '<a href="javascript:window.close()" class="wa-btn">Return to WhatsApp</a>' +
+          '</div>';
+      } else {
+        throw new Error(res.message||'Failed to confirm seats');
+      }
     })
-    .catch(function(e){btn.disabled=false;btn.textContent='Confirm Selection';alert('Could not send selection: '+e.message);});
+    .catch(function(e){
+      btn.disabled=false;
+      btn.textContent='Confirm Selection';
+      alert('Could not confirm seats: '+e.message);
+    });
 }
 
 document.addEventListener('click', function(e){
@@ -619,13 +661,11 @@ document.addEventListener('click', function(e){
   if(tripBtn){
     state.tripIdx=+tripBtn.dataset.trip;
     state.segIdx=0;
-    /* DO NOT reset paxIdx — keep current passenger */
     renderAll();return;
   }
   var segBtn=t.closest&&t.closest('[data-seg-idx]');
   if(segBtn){
     state.segIdx=+segBtn.dataset.segIdx;
-    /* DO NOT reset paxIdx */
     renderAll();return;
   }
   var paxBtn=t.closest&&t.closest('[data-pax-idx]');
@@ -638,7 +678,20 @@ document.addEventListener('click', function(e){
     if(seatTakenByInfo(gi,pi,code))return;
     var key=gi+'::'+pi+'::'+code;var was=!!state.sel[key];
     Object.keys(state.sel).forEach(function(k){if(k.indexOf(gi+'::'+pi+'::')===0)delete state.sel[k];});
-    if(!was){state.sel[key]={code:code,price:parseFloat(seatBtn.dataset.price)||0,currency:seatBtn.dataset.currency||''};}
+    if(!was){
+      state.sel[key]={code:code,price:parseFloat(seatBtn.dataset.price)||0,currency:seatBtn.dataset.currency||''};
+      // AUTO-ADVANCE: switch to next passenger on this flight who doesn't have a seat yet
+      var cur=currentSSM();
+      if(cur){
+        var list=paxList(cur.ssm);
+        for(var nextP=0; nextP<list.length; nextP++){
+          if(nextP !== pi && !selectedFor(gi, nextP)){
+            state.paxIdx = nextP;
+            break;
+          }
+        }
+      }
+    }
     renderAll();return;
   }
 });

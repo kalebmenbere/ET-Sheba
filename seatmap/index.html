@@ -30,22 +30,50 @@
   /* Seat Colors */
   --free-bg: #10b981;
   --free-bd: #059669;
-  --free-text: #ffffff;
   
   --paid-bg: #2563eb;
   --paid-bd: #1d4ed8;
-  --paid-text: #ffffff;
   
   --sel-bg: #7c3aed;
   --sel-bd: #6d28d9;
-  --sel-text: #ffffff;
   
   --group-bg: #f59e0b;
   --group-bd: #d97706;
   
-  --occ-bg: #e2e8f0;
+  --occ-bg: #f1f5f9;
   --occ-bd: #cbd5e1;
   --occ-text: #94a3b8;
+
+  /* Default Dynamic Dimensions */
+  --seat-w: 40px;
+  --seat-h: 44px;
+  --aisle-w: 22px;
+  --rnum-w: 26px;
+  --side-w: 8px;
+  --seat-gap: 4px;
+  --seat-radius: 9px;
+}
+
+/* WIDEBODY (7 to 10 seats across: B787, B777, A350) */
+.plane-shell.widebody {
+  --seat-w: 36px;
+  --seat-h: 40px;
+  --aisle-w: 18px;
+  --rnum-w: 24px;
+  --side-w: 6px;
+  --seat-gap: 3px;
+  --seat-radius: 8px;
+}
+
+/* NARROWBODY (4 to 6 seats across: B737, Dash 8) */
+.plane-shell.narrowbody {
+  --seat-w: 42px;
+  --seat-h: 46px;
+  --aisle-w: 26px;
+  --rnum-w: 28px;
+  --side-w: 8px;
+  --seat-gap: 5px;
+  --seat-radius: 9px;
 }
 
 * { box-sizing: border-box; }
@@ -371,12 +399,25 @@ body {
 .plane-flight-bar b {
   color: var(--et-green-dark);
 }
+.plane-hint-bar {
+  padding: 8px 16px;
+  background: #ecfdf5;
+  border-bottom: 1px solid var(--et-green-border);
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--et-green-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
 
 /* AIRCRAFT CABIN VISUALIZATION */
 .plane-wrap {
   display: flex;
   justify-content: center;
-  padding: 24px 16px 32px;
+  padding: 24px 12px 32px;
   background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 100%);
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
@@ -386,79 +427,155 @@ body {
   flex-direction: column;
   align-items: center;
   position: relative;
-  filter: drop-shadow(0 18px 36px rgba(0, 103, 71, 0.12));
-  min-width: min-content;
+  filter: drop-shadow(0 16px 32px rgba(0, 103, 71, 0.12));
+  width: fit-content;
+  margin: 0 auto;
+}
+
+/* WINGS (Visible on large screens) */
+.plane-wings-container {
+  position: absolute;
+  top: 36%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  height: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+.wing-left, .wing-right {
+  position: absolute;
+  top: 0;
+  width: 90px;
+  height: 240px;
+  background: linear-gradient(180deg, #e2e8f0 0%, #cbd5e1 100%);
+  border: 1.5px solid #94a3b8;
+  opacity: 0.65;
+}
+.wing-left {
+  right: 100%;
+  border-right: none;
+  clip-path: polygon(100% 0%, 0% 50%, 0% 70%, 100% 100%);
+  border-radius: 8px 0 0 16px;
+}
+.wing-right {
+  left: 100%;
+  border-left: none;
+  clip-path: polygon(0% 0%, 100% 50%, 100% 70%, 0% 100%);
+  border-radius: 0 8px 16px 0;
+}
+@media (max-width: 900px) {
+  .wing-left, .wing-right { display: none; }
 }
 
 /* NOSE CONE & COCKPIT */
 .plane-nose-container {
   width: 100%;
   display: block;
-  margin-bottom: -2px;
+  margin-bottom: -1px;
 }
 .plane-nose {
   display: block;
   width: 100%;
   height: auto;
 }
+
+/* CABIN FUSELAGE HULL */
 .plane-body {
   position: relative;
   background: #ffffff;
-  border-left: 3px solid #10b981;
-  border-right: 3px solid #10b981;
+  border-left: 3px solid #006747;
+  border-right: 3px solid #006747;
   width: 100%;
+  z-index: 1;
 }
+/* Cabin Windows running down the fuselage */
 .plane-body::before, .plane-body::after {
   content: "";
   position: absolute;
-  top: 15%;
-  width: 6px;
-  height: 48px;
-  background: #ef4444;
-  border-radius: 3px;
+  top: 12px;
+  bottom: 12px;
+  width: 5px;
+  background-image: radial-gradient(circle, #94a3b8 2px, transparent 2px);
+  background-size: 5px 24px;
+  background-repeat: repeat-y;
+  opacity: 0.6;
+  pointer-events: none;
+  z-index: 2;
 }
-.plane-body::before { left: -6px; }
-.plane-body::after { right: -6px; }
+.plane-body::before { left: 3px; }
+.plane-body::after { right: 3px; }
 
+/* TAIL CONE */
 .plane-tail {
   display: block;
   width: 100%;
   height: auto;
-  margin-top: -2px;
+  margin-top: -1px;
+  z-index: 1;
 }
 
 /* SEAT GRID */
 .mapwrap {
-  padding: 16px 20px;
+  padding: 16px 14px;
 }
 .grid {
   display: inline-block;
-  text-align: left;
+  text-align: center;
+  width: 100%;
 }
 .srow {
   display: flex;
   align-items: center;
-  gap: 5px;
-  margin-bottom: 5px;
+  justify-content: center;
+  gap: var(--seat-gap);
+  margin-bottom: var(--seat-gap);
+  position: relative;
 }
+.srow.exit-row {
+  margin-top: 6px;
+  margin-bottom: 6px;
+}
+.exit-gate {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #dc2626;
+  color: #ffffff;
+  font-size: 8px;
+  font-weight: 900;
+  padding: 2px 5px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+  pointer-events: none;
+  z-index: 5;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.exit-gate.left { right: calc(100% + 5px); }
+.exit-gate.right { left: calc(100% + 5px); }
+
 .rnum {
-  width: 34px;
-  flex: 0 0 34px;
+  width: var(--rnum-w);
+  flex: 0 0 var(--rnum-w);
   text-align: center;
-  font-size: 11.5px;
+  font-size: 11px;
   font-weight: 700;
   color: #94a3b8;
+  user-select: none;
 }
+.rnum.left { text-align: right; padding-right: 2px; }
+.rnum.right { text-align: left; padding-left: 2px; }
+
 .cell {
-  width: 44px;
-  height: 42px;
-  flex: 0 0 44px;
-  border-radius: 10px;
+  width: var(--seat-w);
+  height: var(--seat-h);
+  flex: 0 0 var(--seat-w);
+  border-radius: var(--seat-radius);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 800;
   border: 1.5px solid transparent;
   position: relative;
@@ -467,25 +584,25 @@ body {
   user-select: none;
 }
 .cell.side {
-  width: 6px;
-  flex: 0 0 6px;
+  width: var(--side-w);
+  flex: 0 0 var(--side-w);
   border: none;
   background: transparent;
 }
 .cell.aislecell {
-  width: 22px;
-  flex: 0 0 22px;
+  width: var(--aisle-w);
+  flex: 0 0 var(--aisle-w);
   border: none;
   background: transparent;
 }
 .cell.colhead {
-  height: 28px;
+  height: 24px;
   background: transparent;
   border: none;
   color: #64748b;
   font-size: 12px;
   font-weight: 800;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
 }
 .cell.blank {
   background: transparent;
@@ -494,7 +611,7 @@ body {
 .cell.gapcell {
   border: none;
   background: transparent;
-  height: 22px;
+  height: 18px;
   position: relative;
 }
 .cell.gapcell::after {
@@ -502,16 +619,15 @@ body {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 5px;
-  height: 5px;
+  width: 4px;
+  height: 4px;
   border-radius: 50%;
   background: #cbd5e1;
   transform: translate(-50%, -50%);
   opacity: 0.6;
 }
 .rnum.gapnum {
-  color: #94a3b8;
-  font-size: 16px;
+  font-size: 14px;
   line-height: 1;
   font-weight: 700;
   opacity: 0.75;
@@ -559,7 +675,7 @@ button.cell.seat:active {
   align-items: center;
   justify-content: center;
   color: #94a3b8;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 900;
 }
 .seat.other-pax {
@@ -572,14 +688,14 @@ button.cell.seat:active {
 }
 .seat.other-pax .pax-badge {
   position: absolute;
-  top: -6px;
-  right: -6px;
-  width: 19px;
-  height: 19px;
+  top: -5px;
+  right: -5px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   background: #7c3aed;
   color: #fff;
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 900;
   display: flex;
   align-items: center;
@@ -602,8 +718,13 @@ button.cell.seat:active {
   cursor: not-allowed;
   pointer-events: none;
 }
+.seat .seat-letter {
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+}
 .seat .price {
-  font-size: 8.5px;
+  font-size: 8px;
   font-weight: 700;
   opacity: 0.95;
   line-height: 1;
@@ -900,7 +1021,7 @@ button.cell.seat:active {
   transform: translateY(-1px);
 }
 
-/* RESPONSIVE BREAKPOINTS */
+/* RESPONSIVE SCALING BREAKPOINTS */
 @media (max-width: 1100px) {
   .layout {
     grid-template-columns: 1fr;
@@ -914,7 +1035,7 @@ button.cell.seat:active {
   .pax-list {
     flex-direction: row;
     overflow-x: auto;
-    padding: 12px;
+    padding: 10px 12px;
     gap: 10px;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: thin;
@@ -928,7 +1049,30 @@ button.cell.seat:active {
   .sum-body { max-height: none; }
 }
 
-@media (max-width: 640px) {
+/* TABLETS & LARGE MOBILES (<= 768px) */
+@media (max-width: 768px) {
+  .plane-shell.widebody {
+    --seat-w: 32px;
+    --seat-h: 36px;
+    --aisle-w: 14px;
+    --rnum-w: 20px;
+    --side-w: 5px;
+    --seat-gap: 3px;
+    --seat-radius: 7px;
+  }
+  .plane-shell.narrowbody {
+    --seat-w: 38px;
+    --seat-h: 42px;
+    --aisle-w: 20px;
+    --rnum-w: 24px;
+    --side-w: 6px;
+    --seat-gap: 4px;
+    --seat-radius: 8px;
+  }
+}
+
+/* STANDARD MOBILE (<= 480px) */
+@media (max-width: 480px) {
   body {
     padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px));
   }
@@ -938,12 +1082,12 @@ button.cell.seat:active {
   .brand-img-wrap { width: 40px; height: 28px; }
   .header-badge { font-size: 11px; padding: 4px 9px; }
   
-  .layout { padding: 10px 8px; gap: 12px; }
-  .panel-head { padding: 10px 14px; font-size: 11.5px; }
+  .layout { padding: 8px; gap: 10px; }
+  .panel-head { padding: 10px 12px; font-size: 11.5px; }
   .pax-count-badge { font-size: 10px; padding: 2px 7px; }
   
   .pax-list { padding: 8px; gap: 8px; }
-  .pax-card { min-width: 140px; padding: 8px 10px; border-radius: 10px; }
+  .pax-card { min-width: 145px; padding: 8px 10px; border-radius: 10px; }
   .pax-avatar { width: 28px; height: 28px; font-size: 12px; }
   .miss-mark { width: 13px; height: 13px; font-size: 8px; }
   .pax-name { font-size: 12px; }
@@ -964,19 +1108,32 @@ button.cell.seat:active {
   
   .plane-flight-bar { padding: 8px 12px; font-size: 11.5px; }
   .plane-wrap { padding: 14px 4px 20px; }
+  .mapwrap { padding: 10px 6px; }
+
+  /* Precision Mobile Dimensions for Perfect Fit */
+  .plane-shell.widebody {
+    --seat-w: 26px;
+    --seat-h: 31px;
+    --aisle-w: 10px;
+    --rnum-w: 16px;
+    --side-w: 4px;
+    --seat-gap: 2px;
+    --seat-radius: 6px;
+  }
+  .plane-shell.narrowbody {
+    --seat-w: 34px;
+    --seat-h: 38px;
+    --aisle-w: 16px;
+    --rnum-w: 20px;
+    --side-w: 5px;
+    --seat-gap: 3px;
+    --seat-radius: 7px;
+  }
   
-  .mapwrap { padding: 8px 4px; }
-  .srow { gap: 3px; margin-bottom: 3px; }
-  .cell { width: 30px; height: 32px; flex: 0 0 30px; font-size: 10.5px; border-radius: 7px; }
-  .cell.side { width: 3px; flex: 0 0 3px; }
-  .cell.aislecell { width: 10px; flex: 0 0 10px; }
-  .cell.colhead { height: 18px; font-size: 9.5px; }
-  .cell.gapcell { height: 16px; }
-  .cell.gapcell::after { width: 3px; height: 3px; }
-  .rnum { width: 22px; flex: 0 0 22px; font-size: 9px; }
-  .rnum.gapnum { font-size: 13px; }
-  .seat .price { font-size: 6.5px; }
-  .seat.other-pax .pax-badge { width: 14px; height: 14px; font-size: 8px; top: -4px; right: -4px; }
+  .seat .seat-letter { font-size: 10px; }
+  .seat .price { font-size: 6px; }
+  .seat.other-pax .pax-badge { width: 13px; height: 13px; font-size: 7.5px; top: -3px; right: -3px; }
+  .exit-gate { font-size: 7px; padding: 1px 3px; }
   
   .legend-list { padding: 10px; gap: 8px; }
   .lg { font-size: 12px; gap: 9px; }
@@ -996,13 +1153,27 @@ button.cell.seat:active {
   .confirmbar button { padding: 10px 18px; font-size: 13px; border-radius: 10px; }
 }
 
-@media (max-width: 380px) {
-  .cell { width: 25px; height: 28px; flex: 0 0 25px; font-size: 9.5px; border-radius: 6px; }
-  .cell.side { width: 2px; flex: 0 0 2px; }
-  .cell.aislecell { width: 6px; flex: 0 0 6px; }
-  .cell.colhead { height: 15px; font-size: 8px; }
-  .rnum { width: 18px; flex: 0 0 18px; font-size: 8px; }
-  .srow { gap: 2px; }
+/* SMALL PHONES (<= 360px) */
+@media (max-width: 360px) {
+  .plane-shell.widebody {
+    --seat-w: 23px;
+    --seat-h: 27px;
+    --aisle-w: 8px;
+    --rnum-w: 13px;
+    --side-w: 3px;
+    --seat-gap: 2px;
+    --seat-radius: 5px;
+  }
+  .plane-shell.narrowbody {
+    --seat-w: 29px;
+    --seat-h: 33px;
+    --aisle-w: 12px;
+    --rnum-w: 17px;
+    --side-w: 4px;
+    --seat-gap: 2px;
+    --seat-radius: 6px;
+  }
+  .seat .seat-letter { font-size: 9px; }
   .seat .price { display: none; }
   .brand-title { font-size: 13.5px; }
   .tab-btn { padding: 5px 9px; font-size: 11px; }
@@ -1049,33 +1220,43 @@ button.cell.seat:active {
 
     <div class="plane-card">
       <div class="plane-flight-bar" id="flightBar"></div>
+      <div class="plane-hint-bar" id="hintBar">
+        <span>💡 Tap any available green or blue seat to assign it to the active passenger</span>
+      </div>
+
       <div class="plane-wrap">
-        <div class="plane-shell" id="planeShell">
+        <div class="plane-shell narrowbody" id="planeShell">
           
-          <!-- NOSE CONE SVG -->
+          <!-- WINGS BACKGROUND FOR DESKTOP -->
+          <div class="plane-wings-container">
+            <div class="wing-left"></div>
+            <div class="wing-right"></div>
+          </div>
+
+          <!-- NOSE CONE & COCKPIT SVG -->
           <div class="plane-nose-container">
-            <svg class="plane-nose" viewBox="0 0 340 150" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+            <svg class="plane-nose" viewBox="0 0 400 130" preserveAspectRatio="none" aria-hidden="true">
               <defs>
                 <linearGradient id="noseGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0" stop-color="#d1fae5"/>
-                  <stop offset="60" stop-color="#ecfdf5"/>
-                  <stop offset="100" stop-color="#ffffff"/>
+                  <stop offset="0%" stop-color="#ecfdf5"/>
+                  <stop offset="50%" stop-color="#ffffff"/>
+                  <stop offset="100%" stop-color="#ffffff"/>
                 </linearGradient>
                 <linearGradient id="cockpitGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0" stop-color="#0f172a"/>
-                  <stop offset="100" stop-color="#334155"/>
+                  <stop offset="0%" stop-color="#0f172a"/>
+                  <stop offset="100%" stop-color="#1e293b"/>
                 </linearGradient>
               </defs>
-              <!-- Fuselage nose curve -->
-              <path d="M 0 150 C 0 42, 68 6, 170 6 C 272 6, 340 42, 340 150 Z"
-                    fill="url(#noseGrad)" stroke="#10b981" stroke-width="2.5" stroke-linejoin="round"/>
-              <!-- Cockpit windows -->
-              <path d="M 120 72 C 145 64, 195 64, 220 72 L 216 84 C 193 78, 147 78, 124 84 Z"
-                    fill="url(#cockpitGrad)" opacity="0.85"/>
-              <line x1="170" y1="67" x2="170" y2="80" stroke="#d1fae5" stroke-width="1.5" opacity="0.8"/>
-              <!-- Streamline accent -->
-              <path d="M 80 110 C 120 98, 220 98, 260 110"
-                    stroke="#10b981" stroke-width="1.2" fill="none" opacity="0.35" stroke-linecap="round"/>
+              <!-- Aerodynamic Fuselage Nose -->
+              <path d="M 1.5 130 C 1.5 35, 75 2, 200 2 C 325 2, 398.5 35, 398.5 130"
+                    fill="url(#noseGrad)" stroke="#006747" stroke-width="3" stroke-linecap="round"/>
+              <!-- Cockpit Windshields -->
+              <path d="M 145 60 C 168 52, 232 52, 255 60 L 250 74 C 230 68, 170 68, 150 74 Z"
+                    fill="url(#cockpitGrad)" opacity="0.88"/>
+              <line x1="200" y1="54" x2="200" y2="70" stroke="#10b981" stroke-width="1.5" opacity="0.6"/>
+              <!-- Ethiopian Golden Yellow Stripe -->
+              <path d="M 70 100 C 120 88, 280 88, 330 100"
+                    stroke="#f59e0b" stroke-width="2" fill="none" opacity="0.8" stroke-linecap="round"/>
             </svg>
           </div>
 
@@ -1085,15 +1266,20 @@ button.cell.seat:active {
           </div>
 
           <!-- TAIL CONE SVG -->
-          <svg class="plane-tail" viewBox="0 0 340 70" preserveAspectRatio="none" aria-hidden="true">
+          <svg class="plane-tail" viewBox="0 0 400 65" preserveAspectRatio="none" aria-hidden="true">
             <defs>
               <linearGradient id="tailGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0" stop-color="#ffffff"/>
-                <stop offset="100" stop-color="#ecfdf5"/>
+                <stop offset="0%" stop-color="#ffffff"/>
+                <stop offset="100%" stop-color="#f0fdf4"/>
               </linearGradient>
             </defs>
-            <path d="M 0 0 L 340 0 L 308 60 L 32 60 Z"
-                  fill="url(#tailGrad)" stroke="#10b981" stroke-width="2.5" stroke-linejoin="round"/>
+            <!-- Open Top Tapering Tail -->
+            <path d="M 1.5 0 L 38 62 L 362 62 L 398.5 0"
+                  fill="url(#tailGrad)" stroke="#006747" stroke-width="3" stroke-linejoin="round"/>
+            <!-- Ethiopian Airlines Tail Fin Colors -->
+            <path d="M 180 48 L 220 48" stroke="#006747" stroke-width="3" stroke-linecap="round"/>
+            <path d="M 185 52 L 215 52" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/>
+            <path d="M 190 56 L 210 56" stroke="#dc2626" stroke-width="2" stroke-linecap="round"/>
           </svg>
         </div>
       </div>
@@ -1374,13 +1560,23 @@ function renderSeatGrid(){
   var cab=cabins[0];var cols=cab.seatColumns||[];var rows=cab.seatRows||[];
   var html='';
 
-  // Column letters header
-  html+='<div class="srow"><div class="rnum"></div>';
+  // Detect Narrowbody vs Widebody to apply responsive cabin sizing
+  var numSeatsAcross = cols.filter(function(c){ return c !== 'LEFT_SIDE' && c !== 'RIGHT_SIDE' && c !== 'AISLE'; }).length;
+  var shell = document.getElementById('planeShell');
+  if(shell){
+    shell.classList.remove('narrowbody', 'widebody');
+    shell.classList.add(numSeatsAcross > 6 ? 'widebody' : 'narrowbody');
+  }
+
+  // Column letters header with mirrored left & right spacers for 100% symmetrical centering
+  html+='<div class="srow colhead-row">';
+  html+='<div class="rnum left"></div>';
   cols.forEach(function(c){
-    if(c==='LEFT_SIDE'||c==='RIGHT_SIDE')html+='<div class="cell side"></div>';
-    else if(c==='AISLE')html+='<div class="cell aislecell"></div>';
+    if(c==='LEFT_SIDE'||c==='RIGHT_SIDE') html+='<div class="cell side"></div>';
+    else if(c==='AISLE') html+='<div class="cell aislecell"></div>';
     else html+='<div class="cell colhead">'+esc(c)+'</div>';
   });
+  html+='<div class="rnum right"></div>';
   html+='</div>';
 
   var prevRowNum=null;
@@ -1388,43 +1584,60 @@ function renderSeatGrid(){
     var seats=row.seats||[];
     var rn=parseInt(row.rowNumber,10);
 
-    // Render row break / gap if non-consecutive rows
+    // Row break / gap if non-consecutive rows
     if(prevRowNum!==null && !isNaN(rn) && !isNaN(prevRowNum) && (rn-prevRowNum)>1){
-      html+='<div class="srow rowgap"><div class="rnum gapnum">⋮</div>';
+      html+='<div class="srow rowgap"><div class="rnum left gapnum">⋮</div>';
       cols.forEach(function(c){
         if(c==='LEFT_SIDE'||c==='RIGHT_SIDE') html+='<div class="cell side"></div>';
         else if(c==='AISLE') html+='<div class="cell aislecell"></div>';
         else html+='<div class="cell gapcell"></div>';
       });
-      html+='</div>';
+      html+='<div class="rnum right gapnum">⋮</div></div>';
     }
     prevRowNum=rn;
 
-    html+='<div class="srow"><div class="rnum">'+esc(row.rowNumber)+'</div>';
+    var hasExitSeat = seats.some(function(s){
+      if(!s) return false;
+      var ch = s.characteristics || s.seatCharacteristics || s.slotCharacteristics || [];
+      return ch.indexOf('EXIT') !== -1;
+    });
+
+    html+='<div class="srow'+(hasExitSeat?' exit-row':'')+'">';
+    if(hasExitSeat){
+      html+='<div class="exit-gate left">EXIT</div>';
+    }
+    // Mirrored left row number
+    html+='<div class="rnum left">'+esc(row.rowNumber)+'</div>';
+
     cols.forEach(function(c,i){
-      if(c==='LEFT_SIDE'||c==='RIGHT_SIDE'){html+='<div class="cell side"></div>';return;}
-      if(c==='AISLE'){html+='<div class="cell aislecell"></div>';return;}
-      var seat=seats[i];var sk=seatKind(seat);
-      if(sk==='blank'){html+='<div class="cell blank"></div>';return;}
+      if(c==='LEFT_SIDE'||c==='RIGHT_SIDE'){ html+='<div class="cell side"></div>'; return; }
+      if(c==='AISLE'){ html+='<div class="cell aislecell"></div>'; return; }
+      var seat=seats[i];
+      var sk=seatKind(seat);
+      if(sk==='blank'){ html+='<div class="cell blank"></div>'; return; }
+      
       var key=gi+'::'+pi+'::'+(seat.code||'');
       var isSelected=!!state.sel[key]&&isSelectableSeat(seat);
       var otherInfo=seatTakenByInfo(gi,pi,seat.code);
       var price=seatPrice(seat);
       var characteristics=seat.characteristics||seat.seatCharacteristics||seat.slotCharacteristics||[];
       var isExit=characteristics.indexOf('EXIT')!==-1;
-      var cls='cell seat '+sk;var avail=isSelectableSeat(seat)?'1':'0';
-      if(otherInfo){cls='cell seat other-pax';avail='0';}
-      else if(isSelected){cls+=' selected';}
-      if(isExit)cls+=' exitseat';
+      var cls='cell seat '+sk;
+      var avail=isSelectableSeat(seat)?'1':'0';
+      if(otherInfo){ cls='cell seat other-pax'; avail='0'; }
+      else if(isSelected){ cls+=' selected'; }
+      if(isExit) cls+=' exitseat';
 
       var inner;
       if(otherInfo){
-        inner='<span>'+esc(seat.code||c)+'</span>';
+        inner='<span class="seat-letter">'+esc(seat.code||c)+'</span>';
       } else {
-        inner='<span>'+esc(c)+'</span>';
-        if(sk==='paid'&&price.amount>0) inner+='<span class="price">'+esc(compact(price.amount))+'</span>';
+        inner='<span class="seat-letter">'+esc(c)+'</span>';
+        if(sk==='paid'&&price.amount>0) {
+          inner+='<span class="price">'+esc(compact(price.amount))+'</span>';
+        }
       }
-      if(otherInfo){inner+='<span class="pax-badge">'+esc(otherInfo.initial)+'</span>';}
+      if(otherInfo){ inner+='<span class="pax-badge">'+esc(otherInfo.initial)+'</span>'; }
 
       var designations=(seat.designations||[]).map(prettyDesignation).filter(Boolean);
       var baseTooltip=otherInfo?('In your group — '+otherInfo.name):sk==='occupied'?'Taken by another passenger':sk==='free'?'Complimentary Standard Seat':sk==='paid'?new Intl.NumberFormat('en-US').format(price.amount)+' '+(price.currency||'ETB'):'Unavailable';
@@ -1432,6 +1645,12 @@ function renderSeatGrid(){
 
       html+='<button type="button" class="'+cls+'" data-gi="'+gi+'" data-pi="'+pi+'" data-code="'+esc(seat.code||'')+'" data-avail="'+avail+'" data-price="'+price.amount+'" data-currency="'+esc(price.currency)+'" title="'+esc(tooltip)+'"'+(avail==='1'?'':' aria-disabled="true"')+'>'+inner+'</button>';
     });
+
+    // Mirrored right row number ensures 100% centering
+    html+='<div class="rnum right">'+esc(row.rowNumber)+'</div>';
+    if(hasExitSeat){
+      html+='<div class="exit-gate right">EXIT</div>';
+    }
     html+='</div>';
   });
   document.getElementById('seatGrid').innerHTML=html;
